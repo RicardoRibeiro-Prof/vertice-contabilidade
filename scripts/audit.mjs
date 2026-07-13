@@ -20,15 +20,23 @@ for(const route of routes){
   if(h1!==1)failures.push(`${route||'/'}: esperado um H1; encontrado ${h1}`)
   if(!canonical.startsWith('https://ricardoribeiro-prof.github.io/vertice-contabilidade/'))failures.push(`${route||'/'}: canonical incorreto`)
   if(!html.includes('/vertice-contabilidade/assets/styles.css'))failures.push(`${route||'/'}: CSS fora do caminho-base`)
+  if(!html.includes('/vertice-contabilidade/assets/images.css'))failures.push(`${route||'/'}: CSS de imagens ausente`)
   if(!html.includes('/vertice-contabilidade/assets/app.js'))failures.push(`${route||'/'}: JS fora do caminho-base`)
   if(text(html).length<220)failures.push(`${route||'/'}: conteúdo insuficiente`)
   if(!html.includes('>Início</a>'))failures.push(`${route||'/'}: menu Início ausente`)
 }
 
-for(const file of ['assets/styles.css','assets/app.js','assets/favicon.svg','assets/social.svg','manifest.webmanifest','robots.txt','sitemap.xml','404.html','admin/index.html'])if(!(await exists(path.join(dist,file))))failures.push(`Arquivo ausente: ${file}`)
+const visualRoutes=['','escritorio/','equipe/','artigos/','artigos/mei-quando-e-hora-de-mudar/','artigos/fluxo-de-caixa-e-contabilidade/','artigos/documentos-para-abrir-empresa/']
+for(const route of visualRoutes){
+  const html=await fs.readFile(path.join(dist,route,'index.html'),'utf8')
+  if(!html.includes('images.unsplash.com'))failures.push(`${route||'/'}: fotografia real ausente`)
+  if(!/<img[^>]+alt="[^"]+"/.test(html))failures.push(`${route||'/'}: texto alternativo de imagem ausente`)
+}
+
+for(const file of ['assets/styles.css','assets/images.css','assets/app.js','assets/favicon.svg','assets/social.svg','manifest.webmanifest','robots.txt','sitemap.xml','404.html','admin/index.html'])if(!(await exists(path.join(dist,file))))failures.push(`Arquivo ausente: ${file}`)
 const robots=await fs.readFile(path.join(dist,'robots.txt'),'utf8')
 if(robots.trim()!=='User-agent: *\nAllow: /')failures.push('robots.txt incorreto')
 const sitemap=await fs.readFile(path.join(dist,'sitemap.xml'),'utf8')
 if(!/<urlset[^>]*><\/urlset>/i.test(sitemap.replace(/\s+/g,'')))failures.push('sitemap demonstrativo deve ser XML vazio válido')
 if(failures.length){console.error(failures.map(x=>`- ${x}`).join('\n'));process.exit(1)}
-console.log(`Auditoria concluída: ${routes.length} páginas públicas e arquivos essenciais validados.`)
+console.log(`Auditoria concluída: ${routes.length} páginas públicas, fotografias reais e arquivos essenciais validados.`)
