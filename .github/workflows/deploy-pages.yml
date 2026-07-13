@@ -49,13 +49,17 @@ jobs:
           grep -q 'Vértice Contabilidade' dist/index.html
           grep -q 'data-prerendered="true"' dist/index.html
 
-      - name: Ler configuração do Pages
-        uses: actions/configure-pages@v5
+      - name: Ativar e configurar GitHub Pages
+        uses: actions/configure-pages@v6
+        with:
+          enablement: true
 
       - name: Enviar somente a pasta dist
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./dist
+          retention-days: 1
+          include-hidden-files: true
 
   deploy:
     name: Publicar no GitHub Pages
@@ -71,4 +75,4 @@ jobs:
     steps:
       - name: Publicar site
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
