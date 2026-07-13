@@ -1,0 +1,49 @@
+name: Verificar build da Vértice
+
+on:
+  push:
+    paths:
+      - '.github/workflows/verify-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+          cache: npm
+      - name: Gerar relatório
+        shell: bash
+        run: |
+          set +e
+          npm ci > verify.log 2>&1
+          CI=$?
+          if [ "$CI" -eq 0 ]; then npm run build >> verify.log 2>&1; BUILD=$?; else BUILD=99; fi
+          RESULT=SUCESSO
+          if [ "$CI" -ne 0 ] || [ "$BUILD" -ne 0 ]; then RESULT=FALHA; fi
+          {
+            echo '# Verificação do build'
+            echo
+            echo "Resultado: **$RESULT**"
+            echo
+            echo "- npm ci: $CI"
+            echo "- npm run build: $BUILD"
+            echo "- páginas HTML: $(find dist -name index.html 2>/dev/null | wc -l)"
+            echo
+            echo '```text'
+            cat verify.log
+            echo '```'
+          } > BUILD-VERIFICATION.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add BUILD-VERIFICATION.md
+          git commit -m 'Registra verificação do build' || true
+          git push
+          test "$RESULT" = SUCESSO
