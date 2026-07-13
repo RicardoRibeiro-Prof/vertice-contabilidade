@@ -1,0 +1,13 @@
+{
+  "name": "vertice-contabilidade",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0 <21"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs && node scripts/audit.mjs",
+    "audit": "node scripts/audit.mjs"
+  }
+}
